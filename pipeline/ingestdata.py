@@ -4,7 +4,8 @@
 from calendar import month
 import pandas as pd
 from sqlalchemy import create_engine
-from tqdm.auto import tqdm 
+from tqdm.auto import tqdm
+import click
 
 dtype = {
     "VendorID": "Int64",
@@ -43,12 +44,23 @@ def run():
     chunksize=100000
     target_table = 'yellow_taxi_data'
 
+# ...existing code...
+@click.command()
+@click.option('--pg-user', default='root', help='PostgreSQL user')
+@click.option('--pg-pass', 'pg_pass', default='root', help='PostgreSQL password')
+@click.option('--pg-host', default='localhost', help='PostgreSQL host')
+@click.option('--pg-port', default=5432, type=int, help='PostgreSQL port')
+@click.option('--pg-db', default='ny_taxi', help='PostgreSQL database name')
+@click.option('--target-table', default='yellow_taxi_data', help='Target table name')
+@click.option('--year', type=int, default=2021, help='Year of the data (e.g. 2021)')
+@click.option('--month', type=int, default=1, help='Month of the data (1-12)')
+@click.option('--chunksize', type=int, default=100000, help='CSV chunksize for iteration')
+def run(pg_user, pg_pass, pg_host, pg_port, pg_db, target_table, year, month, chunksize):
 
-    prefix = 'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/'
+    prefix = 'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow'
     url = f'{prefix}/yellow_tripdata_{year}-{month:02d}.csv.gz'
 
-
-    engine = create_engine(f'postgresql://{pg_user}:{pg_password}@{pg_host}:{pg_port}/{pg_db}')
+    engine = create_engine(f'postgresql://{pg_user}:{pg_pass}@{pg_host}:{pg_port}/{pg_db}')
 
     df_iter = pd.read_csv(
         url,
